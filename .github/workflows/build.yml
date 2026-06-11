@@ -1,4 +1,4 @@
-name: Build Now in Android
+name: Build APK
 
 on:
   push:
@@ -8,34 +8,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Extract app.zip
-        run: |
-          unzip -q app.zip -d app
-          unzip -q build-logic.zip -d build-logic
-          unzip -q core.zip -d core
-          unzip -q feature.zip -d feature
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NowInAndroid-App
-          path: app/build/outputs/apk/debug/*.apk
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+    
+    - name: Build with Gradle (direct)
+      run: |
+        # تثبيت Gradle مباشرة
+        wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
+        unzip gradle-8.2-bin.zip
+        export PATH=$PATH:$(pwd)/gradle-8.2/bin
+        
+        # بناء التطبيق
+        gradle assembleDebug
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/debug/*.apk
