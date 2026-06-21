@@ -3,18 +3,12 @@ const PROXY_PATH = '/vpn';
 
 async function handleRequest(request) {
     const url = new URL(request.url);
-    const path = url.pathname;
-
-    // استجابة WebSocket للاتصال (لـ v2rayNG)
-    if (path === PROXY_PATH) {
+    if (url.pathname === PROXY_PATH) {
         const upgrade = request.headers.get('Upgrade');
-        if (!upgrade || upgrade !== 'websocket') {
-            return new Response('يجب استخدام WebSocket', { status: 400 });
-        }
+        if (!upgrade || upgrade !== 'websocket') return new Response('WebSocket required', { status: 400 });
         const webSocketPair = new WebSocketPair();
         const [client, server] = Object.values(webSocketPair);
         server.accept();
-
         server.addEventListener('message', async (event) => {
             try {
                 const data = JSON.parse(event.data);
@@ -33,48 +27,10 @@ async function handleRequest(request) {
                 server.send(JSON.stringify({ error: error.message }));
             }
         });
-
-        return new Response(null, {
-            status: 101,
-            webSocket: client,
-            headers: {
-                'Upgrade': 'websocket',
-                'Connection': 'Upgrade',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
+        return new Response(null, { status: 101, webSocket: client, headers: { 'Upgrade': 'websocket', 'Connection': 'Upgrade' } });
     }
-
-    // صفحة HTML الرئيسية لعرض رابط الاشتراك
-    if (path === '/' || path === '/index.html') {
-        const host = url.hostname;
-        const vlessLink = `vless://${USER_UUID}@${host}:443?path=${PROXY_PATH}&security=tls&encryption=none&host=${host}&type=ws#خادمي-على-كلاودفلير`;
-        return new Response(`
-            <!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"><title>خادم VPN</title></head>
-            <body style="font-family:Arial;text-align:center;padding:50px;background:#0d1117;color:#fff;">
-                <h1 style="color:#58a6ff;">🚀 خادم VPN يعمل</h1>
-                <p>انسخ هذا الرابط واستخدمه في <strong>v2rayNG</strong>:</p>
-                <code style="display:block;background:#161b22;padding:15px;border-radius:8px;word-break:break-all;border:1px solid #30363d;">${vlessLink}</code>
-                <button onclick="navigator.clipboard.writeText('${vlessLink}')" style="margin:20px;padding:10px 20px;background:#238636;color:#fff;border:none;border-radius:6px;cursor:pointer;">📋 نسخ الرابط</button>
-            </body>
-            </html>
-        `, {
-            headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache' }
-        });
-    }
-
-    // أي مسار آخر يعطي رسالة بسيطة
-    return new Response('✅ خادم VPN يعمل. استخدم المسار /vpn للاتصال.', { status: 200 });
+    const host = url.hostname;
+    const vlessLink = `vless://${USER_UUID}@${host}:443?path=${PROXY_PATH}&security=tls&encryption=none&host=${host}&type=ws#خادمي`;
+    return new Response(`<h1>🚀 VPN Worker</h1><p>انسخ هذا الرابط في v2rayNG:</p><code>${vlessLink}</code>`, { headers: { 'Content-Type': 'text/html' } });
 }
-
-export default {
-    async fetch(request) {
-        try {
-            return await handleRequest(request);
-        } catch (error) {
-            return new Response(`خطأ: ${error.message}`, { status: 500 });
-        }
-    }
-};
+export default { fetch: handleRequest };
