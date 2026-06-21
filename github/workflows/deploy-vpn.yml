@@ -2,14 +2,16 @@ name: نشر خادم VPN إلى Cloudflare
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: استنساخ مشروع EDtunnel
+      - uses: actions/checkout@v4
+
+      - name: استنساخ EDtunnel
         run: git clone https://github.com/cmliu/edgetunnel.git
 
       - name: إعداد Node.js
@@ -17,7 +19,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: تثبيت الاعتماديات والنشر
+      - name: نشر الخادم
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
@@ -25,4 +27,4 @@ jobs:
           npm install
           echo 'UUID=b8314d9a-3d7f-4e6c-8a5b-2f1c9e7d4a3b' > .env
           echo 'PROXYIP=true' >> .env
-          npx wrangler deploy --name xvpn-server
+          npx wrangler deploy --name xvpn-server 
