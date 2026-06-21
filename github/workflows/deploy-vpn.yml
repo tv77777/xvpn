@@ -1,5 +1,4 @@
 name: نشر خادم VPN إلى Cloudflare
-
 on:
   push:
     branches: [ main ]
