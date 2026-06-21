@@ -1,0 +1,30 @@
+name: Deploy VPN
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone EDtunnel
+        run: git clone https://github.com/cmliu/edgetunnel.git
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Deploy to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          cd edgetunnel
+          npm install
+          echo 'UUID=b8314d9a-3d7f-4e6c-8a5b-2f1c9e7d4a3b' > .env
+          echo 'PROXYIP=true' >> .env
+          npx wrangler deploy --name xvpn-server
