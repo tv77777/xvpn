@@ -19,9 +19,10 @@ jobs:
         with:
           node-version: '20'
 
+      - name: تسجيل الدخول إلى Cloudflare
+        run: npx wrangler login
+
       - name: تثبيت الاعتماديات والنشر
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           cd edgetunnel
           npm install
