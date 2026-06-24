@@ -11,15 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: استنساخ EDtunnel
+      - name: استنساخ مشروع EDtunnel
         run: git clone https://github.com/cmliu/edgetunnel.git
 
       - name: إعداد Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # ← هذا هو التغيير الوحيد (من 18 إلى 20)
+          node-version: '20'
 
-      - name: نشر الخادم
+      - name: تثبيت الاعتماديات والنشر
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
